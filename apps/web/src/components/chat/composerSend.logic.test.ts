@@ -6,6 +6,7 @@ import { threadContextReference } from "../../lib/composerContextRecords";
 import { threadContextRecord } from "@t3tools/shared/composerContextReferences";
 import {
   approvalRedirectNotice,
+  composerSendBusy,
   loadBalancingSendWarning,
   multipleModelSendBlock,
   referencedThreadContexts,
@@ -122,5 +123,29 @@ describe("approvalRedirectNotice", () => {
   it("stays quiet when the decline failed or the user left the thread", () => {
     expect(approvalRedirectNotice({ ...settled, declined: false })).toBeNull();
     expect(approvalRedirectNotice(settled)).toBeNull();
+  });
+});
+
+describe("composerSendBusy", () => {
+  const idle = {
+    queuedRunEdit: { isEditing: false, isSaving: false },
+    localDispatchPending: false,
+    setupQueueSendThreadKey: null,
+    activeThreadKey: "thread",
+    isResuming: false,
+  };
+
+  it("holds a queued-message edit only while that edit saves", () => {
+    expect(composerSendBusy({ ...idle, localDispatchPending: true })).toBe(true);
+    expect(
+      composerSendBusy({
+        ...idle,
+        queuedRunEdit: { isEditing: true, isSaving: false },
+        localDispatchPending: true,
+      }),
+    ).toBe(false);
+    expect(composerSendBusy({ ...idle, queuedRunEdit: { isEditing: true, isSaving: true } })).toBe(
+      true,
+    );
   });
 });

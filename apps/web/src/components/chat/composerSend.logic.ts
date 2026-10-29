@@ -79,3 +79,21 @@ export function approvalRedirectNotice(input: {
   }
   return null;
 }
+
+/** Whether the send button spins. In queued-edit mode it saves that edit, which only its own save blocks. */
+export function composerSendBusy(input: {
+  readonly queuedRunEdit: { readonly isEditing: boolean; readonly isSaving: boolean };
+  readonly localDispatchPending: boolean;
+  readonly setupQueueSendThreadKey: string | null;
+  readonly activeThreadKey: string | null;
+  readonly isResuming: boolean;
+}): boolean {
+  if (input.queuedRunEdit.isEditing) return input.queuedRunEdit.isSaving;
+  return (
+    input.localDispatchPending ||
+    (input.setupQueueSendThreadKey !== null &&
+      input.setupQueueSendThreadKey === input.activeThreadKey) ||
+    input.queuedRunEdit.isSaving ||
+    input.isResuming
+  );
+}
