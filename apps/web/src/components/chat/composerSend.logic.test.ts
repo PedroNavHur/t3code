@@ -8,6 +8,7 @@ import {
   approvalRedirectNotice,
   composerSendBusy,
   loadBalancingSendWarning,
+  localDispatchHoldsSend,
   multipleModelSendBlock,
   referencedThreadContexts,
 } from "./composerSend.logic";
@@ -126,7 +127,7 @@ describe("approvalRedirectNotice", () => {
   });
 });
 
-describe("composerSendBusy", () => {
+describe("composerSendBusy and localDispatchHoldsSend", () => {
   const idle = {
     queuedRunEdit: { isEditing: false, isSaving: false },
     localDispatchPending: false,
@@ -147,5 +148,9 @@ describe("composerSendBusy", () => {
     expect(composerSendBusy({ ...idle, queuedRunEdit: { isEditing: true, isSaving: true } })).toBe(
       true,
     );
+    expect(localDispatchHoldsSend({ ...idle, localDispatchPending: true })).toBe(true);
+    expect(
+      localDispatchHoldsSend({ queuedRunEdit: { isEditing: true }, localDispatchPending: true }),
+    ).toBe(false);
   });
 });

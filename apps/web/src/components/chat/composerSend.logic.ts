@@ -80,6 +80,14 @@ export function approvalRedirectNotice(input: {
   return null;
 }
 
+/** A pending local dispatch holds new sends, but not the save of a queued-message edit. */
+export function localDispatchHoldsSend(input: {
+  readonly queuedRunEdit: { readonly isEditing: boolean };
+  readonly localDispatchPending: boolean;
+}): boolean {
+  return input.localDispatchPending && !input.queuedRunEdit.isEditing;
+}
+
 /** Whether the send button spins. In queued-edit mode it saves that edit, which only its own save blocks. */
 export function composerSendBusy(input: {
   readonly queuedRunEdit: { readonly isEditing: boolean; readonly isSaving: boolean };
@@ -90,7 +98,7 @@ export function composerSendBusy(input: {
 }): boolean {
   if (input.queuedRunEdit.isEditing) return input.queuedRunEdit.isSaving;
   return (
-    input.localDispatchPending ||
+    localDispatchHoldsSend(input) ||
     (input.setupQueueSendThreadKey !== null &&
       input.setupQueueSendThreadKey === input.activeThreadKey) ||
     input.queuedRunEdit.isSaving ||
